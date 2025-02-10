@@ -5,13 +5,13 @@ from transformers import BertForSequenceClassification, BertTokenizerFast
 import pickle
 from flask import Flask, request, jsonify
 # Function to fetch and clean the content of a website
-with open('C:\\Users\\sbize\\PycharmProjects\\API_Test\\Test2 ✔️ ✔️\\label_encoder.pkl', 'rb') as f:
+with open('label_encoder.pkl', 'rb') as f:
     label_encoder = pickle.load(f)
 
 app = Flask(__name__)
 
-model = BertForSequenceClassification.from_pretrained('C:\\Users\\sbize\\PycharmProjects\\API_Test\\Test2 ✔️ ✔️\\website_classifier_model')
-tokenizer = BertTokenizerFast.from_pretrained('C:\\Users\\sbize\\PycharmProjects\\API_Test\\Test2 ✔️ ✔️\\website_classifier_tokenizer')
+model = BertForSequenceClassification.from_pretrained('website_classifier_model')
+tokenizer = BertTokenizerFast.from_pretrained('website_classifier_tokenizer')
 
 def fetch_content(url):
     r = requests.get(url)
