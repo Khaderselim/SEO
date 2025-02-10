@@ -29,9 +29,4 @@ The main scripts involved are:
 - `main.py`: Script to load the model and make predictions using a Flask API.
 - `Test.py`: Script to test the model on a sample website.
 
-For more details, please refer to the individual scripts in the `Web-Classification` folder.
 
-You can view the repository contents [here](https://github.com/Khaderselim/SEO/tree/main/Web-Classification).
-```
-
-You can create a new file named `README.md` in the `Web-Classification` folder and add the above content to it.
