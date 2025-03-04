@@ -1,3 +1,5 @@
+from typing import Any
+
 from bs4 import BeautifulSoup, Comment
 import re
 import cloudscraper
@@ -44,13 +46,8 @@ class DOMPriceExtractor:
                 main_container = element
 
         return  main_container or soup
-
-    def extract_prices(self, url: str) -> str:
-        """Main price extraction method"""
+    def get_price(self,soup):
         try:
-            scraper = cloudscraper.create_scraper()
-            html_content = scraper.get(url).content
-            soup = BeautifulSoup(html_content, 'html.parser')
             for a_tag in soup.find_all('a'):
                 next_sibling = a_tag.find_next_sibling()
                 if next_sibling and re.search(self.price_patterns, next_sibling.get_text(strip=True)):
@@ -86,7 +83,6 @@ class DOMPriceExtractor:
                             for price in price_matches:
                                 formatted_price = price.strip()
                                 if formatted_price :
-
                                     return formatted_price+str(next_element)
 
             for element in elements:
@@ -99,9 +95,55 @@ class DOMPriceExtractor:
         except Exception as e:
             print(f"Error extracting prices: {e}")
             return ""
+
+    def get_title(self, soup):
+        try:
+            # Try to extract title from meta tags
+            try:
+                title = soup.find('meta', property='og:title')['content']
+                return title
+            except:
+                pass
+            try:
+                title = soup.find('meta', property='twitter:title')['content']
+                return title
+            except:
+                pass
+            try:
+                title = soup.find('meta', {'name': 'title'})['content']
+                return title
+            except:
+                pass
+
+            # Clean up DOM
+            for tag in soup(['script', 'style', 'noscript', 'iframe',
+                             'meta', 'head', 'footer', 'nav', 'del', 'header', 'a', 'ol', 'ul', 'li']):
+                tag.decompose()
+
+            for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
+                comment.extract()
+
+            container = self._find_product_container(soup)
+            seen_title = container.find('h1').get_text(strip=True)
+
+            return seen_title
+
+        except Exception as e:
+            print(f"Error extracting prices: {e}")
+            return ""
+
+    def extract_prices(self, url: str) -> tuple[str | Any, str | Any]:
+        """Main price extraction method"""
+        scraper = cloudscraper.create_scraper()
+        html_content = scraper.get(url).content
+        soup = BeautifulSoup(html_content, 'html.parser')
+        soup1 = BeautifulSoup(html_content, 'html.parser')
+        return  self.get_price(soup1),self.get_title(soup)
+
+
 # Usage
 if __name__ == "__main__":
     extractor = DOMPriceExtractor()
-    url = "https://bestbuytunisie.tn/cle-usb-pny-64-go-usb-2-0-noir-tunisie/"
-    prices = extractor.extract_prices(url)
-    print(f"Found prices: {prices}")
+    url = "https://animalzone.tn/shampoing-chien/3510-bioline-shampoing-a-l-huile-de-neem-1l-oc22-6970117120868.html"
+    prices,title = extractor.extract_prices(url)
+    print(f"Found title: {title}\nFound prices: {prices}")
