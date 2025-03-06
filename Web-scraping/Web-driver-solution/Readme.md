@@ -1,4 +1,4 @@
-```markdown
+
 # SEO Web Scraping with Web Driver Solution
 
 This project contains a web scraping solution using a web driver. The project uses Docker to containerize the application for easy setup and deployment.
