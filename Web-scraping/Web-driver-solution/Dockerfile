@@ -1,3 +1,4 @@
+# Use Python slim image
 FROM python:3.10-slim
 
 # Install system dependencies
@@ -27,28 +28,33 @@ RUN apt-get update && apt-get install -y \
     libxi6 \
     libxss1 \
     libgconf-2-4 \
-    dbus \
+    dbus-x11 \
+    supervisor \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up dbus
+# Setup dbus
 RUN mkdir -p /var/run/dbus
+RUN dbus-uuidgen > /var/lib/dbus/machine-id
 
-# Copy and install requirements
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Install Playwright browsers
+# Install Playwright
+RUN pip install --no-cache-dir playwright
 RUN playwright install chromium
 RUN playwright install-deps
 
-# Copy application code
+# Set working directory
+WORKDIR /app
+
+# Copy project files
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
-# Create a script to start Xvfb and run the application
-RUN echo '#!/bin/bash\nXvfb :99 -screen 0 1024x768x16 &\nexport DISPLAY=:99\npython main.py' > start.sh
-RUN chmod +x start.sh
+# Copy Supervisor config
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Run the script
-CMD ["./start.sh"]
+# Expose API port
+EXPOSE ${PORT:-5000}
+
+# Start Supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
