@@ -89,16 +89,17 @@ urls = [
     "https://www.ebay.com/itm/166940209780?_trkparms=amclksrc%3DITM%26aid%3D777008%26algo%3DPERSONAL.TOPIC%26ao%3D1%26asc%3D20230906152218%26meid%3D6d366f2dd0b548a5b1e38b6f6ad6111f%26pid%3D101817%26rk%3D1%26rkt%3D1%26itm%3D166940209780%26pmt%3D0%26noa%3D1%26pg%3D4375194%26algv%3DPersonalizedTopicsV2WithSizeMsku%26brand%3DSeiko&_trksid=p4375194.c101817.m47269&_trkparms=parentrq%3A654a8b9c1950ab119b93eb1dffff85ca%7Cpageci%3Ac37bddfc-f996-11ef-965e-9275ce0d6854%7Ciid%3A1%7Cvlpname%3Avlp_homepage",
     "https://animalzone.tn/pack/4980-ownat-sterilized-15-kg-2-lindocat-charme-ambre-oriental-10l.html"
 ]
-for url in urls:
-    print(f"\nTesting URL: {url}")
-    prices = extract_prices(url)
-    if prices:
-        print(f"Found {len(prices)} unique prices:")
-        for i, item in enumerate(prices, 1):
-            print(f"\n{i}. Price: {item['price']}")
-            print(f"   Tag: {item['tag_name']}")
-            print(f"   Attributes: {item['attributes']}")
-    else:
-        print("No prices found")
-
-    #   Attributes: {'id': 'brxe-dgbbbm', 'class': ['brxe-product-price', 'product-card__price-new']}
+#for url in urls:
+#    print(f"\nTesting URL: {url}")
+#    prices = extract_prices(url)
+#    if prices:
+#        print(f"Found {len(prices)} unique prices:")
+#        for i, item in enumerate(prices, 1):
+#            print(f"\n{i}. Price: {item['price']}")
+#            print(f"   Tag: {item['tag_name']}")
+#            print(f"   Attributes: {item['attributes']}")
+#    else:
+#        print("No prices found")
+#
+#    #   Attributes: {'id': 'brxe-dgbbbm', 'class': ['brxe-product-price', 'product-card__price-new']}
+#
