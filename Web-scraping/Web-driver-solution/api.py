@@ -1,14 +1,16 @@
 from flask import Flask, jsonify, request, session
 from flask_session import Session
-from main import extract_prices
+from main import extract_pattern
 from urllib.parse import urlparse
 import os
+from price import DOMPriceExtractor
+
 app = Flask(__name__)
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
-
-@app.route('/api/extract-price', methods=['GET'])
-def extract_price():
+extractor = DOMPriceExtractor()
+@app.route('/api/extract-patterns', methods=['GET'])
+def extract_patterns():
     try:
         url = request.args.get('url')
         if not url:
@@ -23,7 +25,7 @@ def extract_price():
             return jsonify({'error': 'Invalid URL'}), 400
 
         # Extract prices
-        prices = extract_prices(url)
+        prices = extract_pattern(url)
 
         if not prices:
             return jsonify({'error': 'No prices found'}), 404
@@ -48,6 +50,48 @@ def extract_price():
         session['interactions'].append(response)
 
         return jsonify(response)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/extract-price', methods=['GET'])
+def extract_price():
+    try:
+        url = request.args.get('url')
+        param = request.args.get('param')
+        if not url:
+            return jsonify({'error': 'URL is required'}), 400
+
+        # Validate URL
+        try:
+            result = urlparse(url)
+            if not all([result.scheme, result.netloc]):
+                return jsonify({'error': 'Invalid URL format'}), 400
+        except ValueError:
+            return jsonify({'error': 'Invalid URL'}), 400
+
+
+        # Extract price
+        if not param:
+            price, title, param = extractor.extract_prices(url)
+        else:
+            price, title, param = extractor.extract_prices(url, param)
+
+        if not price:
+            return jsonify({'error': 'No price found'}), 404
+
+        # Save interaction in session
+        if 'interactions' not in session:
+            session['interactions'] = []
+        session['interactions'].append({'url': url, 'title': title, 'price': price})
+
+        return jsonify({
+            'success': True,
+            'title': title,
+            'price': price.replace("TTC", ""),
+            'param': param,
+            'url': url
+        })
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
