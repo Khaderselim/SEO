@@ -1,4 +1,3 @@
-# Use Python slim image
 FROM python:3.10-slim
 
 # Install system dependencies
@@ -37,17 +36,17 @@ RUN apt-get update && apt-get install -y \
 RUN mkdir -p /var/run/dbus
 RUN dbus-uuidgen > /var/lib/dbus/machine-id
 
-# Install Playwright
-RUN pip install --no-cache-dir playwright
-RUN playwright install chromium
-RUN playwright install-deps
-
 # Set working directory
 WORKDIR /app
 
 # Copy project files
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Playwright with specific browser
+RUN python -m playwright install --with-deps chromium
+RUN playwright install-deps
+
 COPY . .
 
 # Copy Supervisor config

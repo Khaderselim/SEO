@@ -1,6 +1,7 @@
 #{"tag":"span","attributes":"{\"class\":[\"price\"],\"itemprop\":\"price\"}"}
 import json
 from typing import Any, Optional
+
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup, Comment ,Tag
 import re
@@ -56,7 +57,7 @@ class DOMPriceExtractor:
         return  main_container or soup
     def get_price(self,soup):
         for tag in soup(['script', 'style', 'noscript', 'iframe',
-                         'meta', 'head', 'footer', 'nav', 'del', 'header', 'a', 'ol', 'ul', 'li']):
+                          'head', 'footer', 'nav', 'del', 'header', 'a', 'ol', 'ul', 'li']):
             tag.decompose()
         # Dictionary to store unique prices (key: normalized price, value: best tag)
 
@@ -103,7 +104,7 @@ class DOMPriceExtractor:
 
             # Clean up DOM
             for tag in soup(['script', 'style', 'noscript', 'iframe',
-                             'meta', 'head', 'footer', 'nav', 'del', 'header', 'a', 'ol', 'ul', 'li']):
+                              'head', 'footer', 'nav', 'del', 'header', 'a', 'ol', 'ul', 'li']):
                 tag.decompose()
 
             for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
@@ -118,7 +119,7 @@ class DOMPriceExtractor:
             print(f"Error extracting prices: {e}")
             return ""
 
-    def extract_prices(self, url: str, param: Optional[str] = None) -> tuple[str | Any, str | Any, str | None]:
+    def extract_prices(self, url: str, param: Optional[str] = None, descr_param: Optional[str] = None) -> tuple[str | Any, str | Any, str | None]:
         """Main price extraction method"""
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=False)
@@ -137,19 +138,46 @@ class DOMPriceExtractor:
         soup1 = BeautifulSoup(html_content, 'lxml')
         price = self.get_price(soup1)
         title = self.get_title(soup)
+        description=''
         if param:
             param_ = json.loads(param)
             attributes = json.loads(param_['attributes'])
-            price = soup1.find(name=param_['tag'], attrs=attributes).get_text()
+            if attributes:
+                element = soup.find(name=param_['tag'], attrs=attributes)
+                if(element.has_attr('content')):
 
-        return  price,title,param
+                    price = f"{float(element['content']):,.3f}".replace(",", " ").replace(".", ",") + " DT"
+                else:
+                    price = element.get_text().strip()
+            else:
+                # Find elements without any attributes
+                all_prices = soup1.find_all(lambda tag: tag.name == param_['tag'] and not tag.attrs)
+                for element in all_prices:
+                    if(isinstance(element,Tag)):
+                        text = element.get_text()
+                        for pattern in self.PRICE_PATTERNS:
+                            if re.match(pattern, text):
+                                price = element.get_text().strip()
+                                break
+        if descr_param:
+            descr_param_ = json.loads(descr_param)
+            attributes = json.loads(descr_param_['attributes'])
+            element = soup.find(name=descr_param_['tag'], attrs=attributes)
+            if(element.has_attr('content')):
+                description = element['content']
+            else:
+                description = element.get_text()
+
+
+        return  price,title,description
 
 
 # Usage
 if __name__ == "__main__":
     extractor = DOMPriceExtractor()
-    url = "https://chillandlit.tn/accueil/8375-ensemble-twinset-femme.html"
-    param = json.dumps({"tag":"span","attributes":"{\"itemprop\":\"price\"}"}
-    )
-    prices,title,param = extractor.extract_prices(url,param=param)
-    print(f"Found title: {title}\nFound prices: {prices}")
+    url = "https://spacenet.tn/lave-vaisselle-tunisie/46222-lave-vaisselle-semi-encastrable-hoover-16-couverts-inox-hdsn2d62.html"
+    param = json.dumps({"tag":"meta","attributes":"{\"property\":[\"product:price:amount\"]}"})
+    descr_param = json.dumps({"tag":"meta","attributes":"{\"property\":\"og:description\"}"})
+
+    prices,title,param = extractor.extract_prices(url,param=param,descr_param=descr_param)
+    print(f"Found title: {title}\nFound prices: {prices}\nFound description: {param}")

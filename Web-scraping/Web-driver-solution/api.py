@@ -25,7 +25,7 @@ def extract_patterns():
             return jsonify({'error': 'Invalid URL'}), 400
 
         # Extract prices
-        prices = extract_pattern(url)
+        prices,description = extract_pattern(url)
 
         if not prices:
             return jsonify({'error': 'No prices found'}), 404
@@ -33,7 +33,12 @@ def extract_patterns():
         # Format response
         response = {
             'url': url,
-            'count': len(prices),
+            'description': [{
+                'text_content': item['text_content'],
+                'tag': item['tag_name'],
+                'attributes': item['attributes']
+            }
+            for item in description],
             'prices': [
                 {
                     'price': item['price'],
@@ -59,6 +64,7 @@ def extract_price():
     try:
         url = request.args.get('url')
         param = request.args.get('param')
+        descr_param = request.args.get('descr_param')
         if not url:
             return jsonify({'error': 'URL is required'}), 400
 
@@ -73,9 +79,11 @@ def extract_price():
 
         # Extract price
         if not param:
-            price, title, param = extractor.extract_prices(url)
+            price, title, description = extractor.extract_prices(url)
+        elif param and not descr_param:
+            price, title, description = extractor.extract_prices(url, param)
         else:
-            price, title, param = extractor.extract_prices(url, param)
+            price, title, description = extractor.extract_prices(url, param, descr_param)
 
         if not price:
             return jsonify({'error': 'No price found'}), 404
@@ -89,7 +97,8 @@ def extract_price():
             'success': True,
             'title': title,
             'price': price.replace("TTC", ""),
-            'param': param,
+            'description': description,
+            'descr_param': descr_param,
             'url': url
         })
 
@@ -101,5 +110,5 @@ def get_interactions():
     return jsonify(session.get('interactions', []))
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8000))
     app.run(debug=False, host='0.0.0.0', port=port)
