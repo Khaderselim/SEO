@@ -1,4 +1,6 @@
 from flask import Flask, jsonify, request, session
+
+from compare import compare_product
 from flask_session import Session
 from main import extract_pattern
 from urllib.parse import urlparse
@@ -65,6 +67,7 @@ def extract_price():
         url = request.args.get('url')
         param = request.args.get('param')
         descr_param = request.args.get('descr_param')
+
         if not url:
             return jsonify({'error': 'URL is required'}), 400
 
@@ -109,6 +112,21 @@ def extract_price():
 def get_interactions():
     return jsonify(session.get('interactions', []))
 
+@app.route('/api/compare', methods=['GET'])
+def compare():
+    try:
+        host = request.args.get('host')
+        user = request.args.get('user')
+        password = request.args.get('passwd')
+        database = request.args.get('database')
+        id_target = request.args.get('id_target')
+        database_prefix = request.args.get('database_prefix')
+
+        result = compare_product(host, user, password, database, id_target, database_prefix)
+        return jsonify({'success': True, 'result': result})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
     app.run(debug=False, host='0.0.0.0', port=port)
