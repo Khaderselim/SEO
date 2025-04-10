@@ -25,9 +25,13 @@ def _extract_content_attributes(element) -> str:
     return ' '.join(texts)
 def clean_attrs(attrs):
     # List of attributes to exclude
-    exclude_attrs = ['content', 'value', 'data-price', 'data-value', 'data-amount', 'id', 'data-product']
+    exclude_attrs = ['content', 'value', 'data-price', 'data-value', 'data-amount', 'id', 'data-product', 'href']
     return {k: v for k, v in attrs.items() if k not in exclude_attrs}
-
+def clean_attr(attrs):
+    # List of attributes to exclude
+    exclude_attrs = ['content', 'value', 'data-price', 'data-value', 'data-amount',
+                    'id', 'data-product', 'href', 'class', 'title']
+    return {k: v for k, v in attrs.items() if k not in exclude_attrs}
 
 
 def extract_pattern(url: str):
@@ -50,7 +54,8 @@ def extract_pattern(url: str):
                       'head', 'footer', 'nav', 'del', 'header', 'a', 'ol', 'ul', 'li']):
         tag.decompose()
     # List to store all found prices
-
+    for tag in soup1(['script', 'style', 'noscript', 'iframe']):
+        tag.decompose()
     prices_list = []
 
     # Get all elements
@@ -83,13 +88,26 @@ def extract_pattern(url: str):
                 'text_content': content or attr_content,
 
             })
+    stock = []
+    for element in soup1.find_all(lambda tag: tag.name != 'main' and any('stock' in str(value).lower()
+                                                  and 'stockage' not in str(value).lower()
+                                                 for value in tag.attrs.values())):
+        content = ' '.join(element.get_text().split()).strip()
+        attr_content = _extract_content_attributes(element)
+
+        if content or attr_content:
+            stock.append({
+                'tag_name': element.name,
+                'attributes': clean_attr(element.attrs),
+                'text_content': content or attr_content,
+
+            })
     # Convert list to results format
     results = []
     # More targeted approach focusing on common price-related attributes
     price_metas_str = list(map(lambda x: str(x), soup1.find_all('meta')))
     price_metas_str = list(filter(lambda x: 'price' in x.lower(), price_metas_str))
     price_metas = [BeautifulSoup(tag, 'lxml').meta for tag in price_metas_str]
-    print(price_metas)
 
     for meta in price_metas:
         if meta.has_attr('content') :
@@ -108,12 +126,13 @@ def extract_pattern(url: str):
             'attributes': clean_attrs(element.attrs)
         })
 
-    return results,description
+    return results,description,stock
 
 if __name__ == "__main__":
-    url = 'https://spacenet.tn/lave-vaisselle-tunisie/46222-lave-vaisselle-semi-encastrable-hoover-16-couverts-inox-hdsn2d62.html'
-    prices,description = extract_pattern(url)
+    url = 'https://wiki.tn/hisense-55-a6k-televiseur-4k-uhd-smart-tv/'
+    prices,description,stock = extract_pattern(url)
     print(prices)
     print(description)
+    print(stock)
 
 

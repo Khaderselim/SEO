@@ -1,3 +1,5 @@
+from threading import Thread
+
 from flask import Flask, jsonify, request, session
 
 from compare import compare_product
@@ -27,7 +29,7 @@ def extract_patterns():
             return jsonify({'error': 'Invalid URL'}), 400
 
         # Extract prices
-        prices,description = extract_pattern(url)
+        prices,description,stock = extract_pattern(url)
 
         if not prices:
             return jsonify({'error': 'No prices found'}), 404
@@ -48,6 +50,14 @@ def extract_patterns():
                     'attributes': item['attributes']
                 }
                 for item in prices
+            ],
+            'stock': [
+                {
+                    'stock': item['text_content'],
+                    'tag': item['tag_name'],
+                    'attributes': item['attributes']
+                }
+                for item in stock
             ]
         }
 
@@ -67,7 +77,7 @@ def extract_price():
         url = request.args.get('url')
         param = request.args.get('param')
         descr_param = request.args.get('descr_param')
-
+        stock_param = request.args.get('stock_param')
         if not url:
             return jsonify({'error': 'URL is required'}), 400
 
@@ -82,11 +92,17 @@ def extract_price():
 
         # Extract price
         if not param:
-            price, title, description = extractor.extract_prices(url)
+            price, title, description, stock = extractor.extract_prices(url)
         elif param and not descr_param:
-            price, title, description = extractor.extract_prices(url, param)
+            if (stock_param):
+                price, title, description, stock = extractor.extract_prices(url, param, stock_param)
+            else:
+                price, title, description, stock = extractor.extract_prices(url, param)
         else:
-            price, title, description = extractor.extract_prices(url, param, descr_param)
+            if (stock_param):
+                price, title, description, stock = extractor.extract_prices(url, param, descr_param, stock_param)
+            else:
+                price, title, description, stock = extractor.extract_prices(url, param, descr_param)
 
         if not price:
             return jsonify({'error': 'No price found'}), 404
@@ -94,14 +110,19 @@ def extract_price():
         # Save interaction in session
         if 'interactions' not in session:
             session['interactions'] = []
-        session['interactions'].append({'url': url, 'title': title, 'price': price})
-
+# Before saving to session, ensure data is serializable
+        session['interactions'].append({
+            'url': url,
+            'title': str(title) if title else '',
+            'price': str(price) if price else ''
+        })
         return jsonify({
             'success': True,
             'title': title,
             'price': price.replace("TTC", ""),
             'description': description,
             'descr_param': descr_param,
+            'stock': stock,
             'url': url
         })
 
@@ -129,4 +150,4 @@ def compare():
         return jsonify({'error': str(e)}), 500
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=False, host='0.0.0.0', port=port, threaded=True)

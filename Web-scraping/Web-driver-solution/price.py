@@ -119,7 +119,7 @@ class DOMPriceExtractor:
             print(f"Error extracting prices: {e}")
             return ""
 
-    def extract_prices(self, url: str, param: Optional[str] = None, descr_param: Optional[str] = None) -> tuple[str | Any, str | Any, str | None]:
+    def extract_prices(self, url: str, param: Optional[str] = None, descr_param: Optional[str] = None, stock_param: Optional[str] = None) -> tuple[str | Any, str | Any, str | None, str | None]:
         """Main price extraction method"""
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=False)
@@ -139,6 +139,7 @@ class DOMPriceExtractor:
         price = self.get_price(soup1)
         title = self.get_title(soup)
         description=''
+        stock = ''
         if param:
             param_ = json.loads(param)
             attributes = json.loads(param_['attributes'])
@@ -168,8 +169,17 @@ class DOMPriceExtractor:
             else:
                 description = element.get_text()
 
+        if stock_param:
+            stock_param_ = json.loads(stock_param)
+            attributes = json.loads(stock_param_['attributes'])
+            element = soup.find(name=stock_param_['tag'], attrs=attributes)
+            if(element.has_attr('content')):
+                stock = element['content']
+            else:
+                stock = element.get_text()
 
-        return  price,title,description
+
+        return  price,title,description,stock
 
 
 # Usage
