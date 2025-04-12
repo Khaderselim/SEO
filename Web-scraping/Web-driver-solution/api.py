@@ -4,15 +4,15 @@ from flask import Flask, jsonify, request, session
 
 from compare import compare_product
 from flask_session import Session
-from main import extract_pattern
+from Pattern_extractor import extract_pattern
 from urllib.parse import urlparse
 import os
-from price import DOMPriceExtractor
+from Values_extractor import DOMExtractor
 
 app = Flask(__name__)
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
-extractor = DOMPriceExtractor()
+extractor = DOMExtractor()
 @app.route('/api/extract-patterns', methods=['GET'])
 def extract_patterns():
     try:
@@ -77,7 +77,7 @@ def extract_price():
         url = request.args.get('url')
         param = request.args.get('param')
         descr_param = request.args.get('descr_param')
-        stock_param = request.args.get('stock_param')
+        stock_param = request.args.get('stock_param') or None
         if not url:
             return jsonify({'error': 'URL is required'}), 400
 
@@ -92,17 +92,17 @@ def extract_price():
 
         # Extract price
         if not param:
-            price, title, description, stock = extractor.extract_prices(url)
+            price, title, description, stock = extractor.extract_values(url)
         elif param and not descr_param:
             if (stock_param):
-                price, title, description, stock = extractor.extract_prices(url, param, stock_param)
+                price, title, description, stock = extractor.extract_values(url, param, stock_param)
             else:
-                price, title, description, stock = extractor.extract_prices(url, param)
+                price, title, description, stock = extractor.extract_values(url, param)
         else:
             if (stock_param):
-                price, title, description, stock = extractor.extract_prices(url, param, descr_param, stock_param)
+                price, title, description, stock = extractor.extract_values(url, param, descr_param, stock_param)
             else:
-                price, title, description, stock = extractor.extract_prices(url, param, descr_param)
+                price, title, description, stock = extractor.extract_values(url, param, descr_param)
 
         if not price:
             return jsonify({'error': 'No price found'}), 404
