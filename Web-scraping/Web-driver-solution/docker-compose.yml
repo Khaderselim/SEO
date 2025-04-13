@@ -4,7 +4,7 @@ services:
   app:
     build: .
     ports:
-      - "8000:8000"
+      - "8000:8000" # you can change it to any port you want (check if the port is free) (e.g. 8080:8080)
     environment:
       - MYSQL_HOST=host.docker.internal
     extra_hosts:
