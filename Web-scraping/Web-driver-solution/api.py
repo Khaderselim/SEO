@@ -7,16 +7,15 @@ from flask_session import Session
 from Pattern_extractor import extract_pattern
 from urllib.parse import urlparse
 import os
-from Values_extractor import DOMExtractor
+from Values_extractor import extract_values  # Update import
 
 app = Flask(__name__) # Initialize Flask app
 app.config['SESSION_TYPE'] = 'filesystem' # Configure session type
 Session(app) # Initialize session
-extractor = DOMExtractor() # Initialize DOMExtractor
 @app.route('/api/extract-patterns', methods=['GET'])
 def extract_patterns():
     """
-    Extract price patterns from the given URL using extract_pattern function (from Pattern_extractor.py).
+    Extract price patterns from the given URL using extract_pattern function (from Pattern_py).
     Returns: jsonify: JSON response containing the extracted patterns
 
     """
@@ -79,7 +78,7 @@ def extract_patterns():
 @app.route('/api/extract-price', methods=['GET'])
 def extract_price():
     """
-    Extract price from the given URL using DOMExtractor class (from Values_extractor.py).
+    Extract price from the given URL using DOMExtractor class (from Values_py).
     Returns: jsonify: JSON response containing the extracted data
 
     """
@@ -103,17 +102,17 @@ def extract_price():
 
         # Extract values using DOMExtractor
         if not param:
-            price, title, description, stock = extractor.extract_values(url)
+            price, title, description, stock = extract_values(url)
         elif param and not descr_param:
             if (stock_param):
-                price, title, description, stock = extractor.extract_values(url, param, stock_param)
+                price, title, description, stock = extract_values(url, param, stock_param)
             else:
-                price, title, description, stock = extractor.extract_values(url, param)
+                price, title, description, stock = extract_values(url, param)
         else:
             if (stock_param):
-                price, title, description, stock = extractor.extract_values(url, param, descr_param, stock_param)
+                price, title, description, stock = extract_values(url, param, descr_param, stock_param)
             else:
-                price, title, description, stock = extractor.extract_values(url, param, descr_param)
+                price, title, description, stock = extract_values(url, param, descr_param)
 
         if not price:
             return jsonify({'error': 'No price found'}), 404
