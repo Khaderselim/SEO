@@ -147,11 +147,3 @@ def extract_values(url: str, param: Optional[str] = None, descr_param: Optional[
 
     return price, title, description, stock
 
-if __name__ == "__main__":
-    url = "https://www.mytek.tn/trottinette-electrique-kepow-e9pro10s-noir.html"
-    price_param = json.dumps({"tag":"meta","attributes":"{\"itemprop\":[\"price\"]}"})
-    descr_param = json.dumps({"tag":"meta","attributes":"{\"property\":\"og:description\"}"})
-    stock_param = json.dumps({"tag":"div","attributes":"{\"itemprop\":\"availability\"}"})
-
-    prices, title, description, stock = extract_values(url, param=price_param, descr_param=descr_param)
-    print(f"Found title: {title}\nFound prices: {prices}\nFound description: {description}\nFound stock: {stock}")
