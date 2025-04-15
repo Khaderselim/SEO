@@ -87,7 +87,7 @@ def get_title(soup):
         print(f"Error extracting prices: {e}")
         return ""
 
-def extract_values(url: str, param: Optional[str] = None, descr_param: Optional[str] = None,
+def extract_values(url: str, price_param: Optional[str] = None, descr_param: Optional[str] = None,
                   stock_param: Optional[str] = None) -> tuple[str | Any, str | Any, str | None, str | None]:
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=False)
