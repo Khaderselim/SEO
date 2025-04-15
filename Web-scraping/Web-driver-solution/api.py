@@ -152,7 +152,26 @@ def get_interactions():
     """
     return jsonify(session.get('interactions', []))
 
+@app.route('/api/compare', methods=['GET'])
+def compare():
+    """
+    Compare products using the compare_product function (from compare.py).
+    Returns: jsonify: JSON response containing the comparison result
 
+    """
+    try:
+        host = request.args.get('host')
+        user = request.args.get('user')
+        password = request.args.get('passwd')
+        database = request.args.get('database')
+        id_target = request.args.get('id_target')
+        database_prefix = request.args.get('database_prefix')
+
+        result = compare_product(host, user, password, database, id_target, database_prefix)
+        return jsonify({'success': True, 'result': result})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 if __name__ == '__main__':
     # Set the port from environment variable or default to 8000
     port = int(os.environ.get('PORT', 8000))
