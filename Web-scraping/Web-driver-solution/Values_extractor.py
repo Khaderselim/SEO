@@ -1,7 +1,7 @@
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup, Comment, Tag
 import json
-from typing import Optional
+from typing import Optional, Any
 import re
 
 # Global variables
@@ -87,10 +87,10 @@ def get_title(soup):
         print(f"Error extracting prices: {e}")
         return ""
 
-def extract_values(url: str, price_param: Optional[str] = None, descr_param: Optional[str] = None,
-                   stock_param: Optional[str] = None) -> tuple[str | Any, str | Any, str | None, str | None]:
+def extract_values(url: str, param: Optional[str] = None, descr_param: Optional[str] = None,
+                  stock_param: Optional[str] = None) -> tuple[str | Any, str | Any, str | None, str | None]:
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=True)
+        browser = playwright.chromium.launch(headless=False)
         page = browser.new_page()
         try:
             page.goto(url, timeout=30000)
@@ -149,9 +149,9 @@ def extract_values(url: str, price_param: Optional[str] = None, descr_param: Opt
 
 if __name__ == "__main__":
     url = "https://www.mytek.tn/trottinette-electrique-kepow-e9pro10s-noir.html"
-    param = json.dumps({"tag":"meta","attributes":"{\"itemprop\":[\"price\"]}"})
+    price_param = json.dumps({"tag":"meta","attributes":"{\"itemprop\":[\"price\"]}"})
     descr_param = json.dumps({"tag":"meta","attributes":"{\"property\":\"og:description\"}"})
     stock_param = json.dumps({"tag":"div","attributes":"{\"itemprop\":\"availability\"}"})
 
-    prices, title, param, stock = extract_values(url, param=param, descr_param=descr_param)
-    print(f"Found title: {title}\nFound prices: {prices}\nFound description: {param}\nFound stock: {stock}")
+    prices, title, description, stock = extract_values(url, param=price_param, descr_param=descr_param)
+    print(f"Found title: {title}\nFound prices: {prices}\nFound description: {description}\nFound stock: {stock}")
