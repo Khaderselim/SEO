@@ -149,7 +149,7 @@ def param_test():
     return jsonify({
         'success': True,
         'message': 'Test successful',
-        'price' : test_method()
+        'price' : str(test_method())
     })
 @app.route('/api/interactions', methods=['GET'])
 def get_interactions():

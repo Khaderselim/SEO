@@ -24,8 +24,8 @@ def test_method():
     for tag in soup(['script', 'style', 'noscript', 'iframe']):
         tag.decompose()
 
-    price = soup.find('meta', attrs={'itemprop': 'price'})['content']
-    return price
+
+    return soup
 
 if __name__ == "__main__":
     print(test_method())
