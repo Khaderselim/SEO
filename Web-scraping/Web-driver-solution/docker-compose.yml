@@ -3,8 +3,7 @@ version: '3.8'
 services:
   app:
     build: .
-    ports:
-      - "8000:8000" # you can change it to any port you want (check if the port is free) (e.g. 8080:8080)
+    network_mode: "host" # Use host network mode to access host services directly
     environment:
       - MYSQL_HOST=host.docker.internal
     extra_hosts:

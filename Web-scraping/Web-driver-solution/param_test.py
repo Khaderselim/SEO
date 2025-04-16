@@ -6,8 +6,7 @@ def test_proxy_connection():
         try:
             browser = playwright.chromium.launch(
                 proxy={
-                    "server": "socks5://127.0.0.1:8899",
-                    "bypass": "127.0.0.1"
+                    "server": "socks5://127.0.0.1:8899"
                 },
                 headless=False
             )
@@ -33,8 +32,7 @@ def test_method():
         try:
             browser = playwright.chromium.launch(
                 proxy={
-                    "server": "socks5://127.0.0.1:8899",
-                    "bypass": "127.0.0.1"
+                    "server": "socks5://127.0.0.1:8899"
                 },
                 headless=False
             )
