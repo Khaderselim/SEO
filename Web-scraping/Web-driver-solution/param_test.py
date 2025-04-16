@@ -8,7 +8,7 @@ def test_method():
         page = browser.new_page()
         try:
             page.goto("https://www.mytek.tn/trottinette-electrique-kepow-e9pro10s-noir.html", timeout=30000)
-            page.wait_for_timeout(5000)  # Wait for 5 seconds to allow the page to load
+            page.wait_for_timeout(2000)
             html_content = page.content()
         except Exception as e:
             print(f"Error loading page: {e}")
@@ -24,8 +24,8 @@ def test_method():
     for tag in soup(['script', 'style', 'noscript', 'iframe']):
         tag.decompose()
 
-
-    return soup
+    price = soup.find('meta', attrs={'itemprop': 'price'})['content']
+    return price
 
 if __name__ == "__main__":
     print(test_method())
