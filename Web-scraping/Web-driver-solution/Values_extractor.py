@@ -169,7 +169,12 @@ class DOMExtractor:
 
         """
         with sync_playwright() as playwright:
-            browser = playwright.chromium.launch(headless=False) # Set headless to True for faster execution, but it's easily blocked by some sites
+            browser = playwright.chromium.launch(
+                proxy={
+                    "server": "socks5://127.0.0.1:8899"
+                },
+                headless=False
+            )# Set headless to True for faster execution, but it's easily blocked by some sites
             page = browser.new_page() # Create a new page in the browser
             try:
                 page.goto(url, timeout=30000) # Navigate to the URL with a timeout of 30 seconds
