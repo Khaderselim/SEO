@@ -144,13 +144,25 @@ def extract_price():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-@app.route('/api/param_test',methods=['GET'])
+@app.route('/api/param_test', methods=['GET'])
 def param_test():
-    return jsonify({
-        'success': True,
-        'message': 'Test successful',
-        'price' : str(test_method())
-    })
+    try:
+        result = test_method()
+        if result == "Proxy connection failed":
+            return jsonify({
+                'success': False,
+                'error': 'Proxy connection failed'
+            }), 503
+        return jsonify({
+            'success': True,
+            'message': 'Test successful',
+            'content': result
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 @app.route('/api/interactions', methods=['GET'])
 def get_interactions():
     """

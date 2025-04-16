@@ -1,8 +1,7 @@
 from playwright.sync_api import sync_playwright
-from bs4 import BeautifulSoup, Comment ,Tag
-import re
+import json
 
-def test_method():
+def test_proxy_connection():
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(
             proxy={
@@ -10,26 +9,40 @@ def test_method():
             },
             headless=True
         )
-        page = browser.new_page()
         try:
-            page.goto("https://www.mytek.tn/trottinette-electrique-kepow-e9pro10s-noir.html", timeout=30000)
-            page.wait_for_timeout(2000)
-            html_content = page.content()
+            context = browser.new_context(ignore_https_errors=True)
+            page = context.new_page()
+            page.goto("https://api.ipify.org?format=json")
+            content = page.content()
+            print(f"IP Check: {content}")
+            return True
         except Exception as e:
-            print(f"Error loading page: {e}")
-            return []
+            print(f"Proxy Error: {e}")
+            return False
         finally:
             browser.close()
 
-    soup = BeautifulSoup(html_content, 'lxml')
-    for tag in soup(['script', 'style', 'noscript', 'iframe',
-                      'head', 'footer', 'nav', 'del', 'header', 'a', 'ol', 'ul', 'li']):
-        tag.decompose()
-    # List to store all found prices
-    for tag in soup(['script', 'style', 'noscript', 'iframe']):
-        tag.decompose()
+def test_method():
+    if not test_proxy_connection():
+        return "Proxy connection failed"
 
-    return soup
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(
+            proxy={
+                "server": "socks5://127.0.0.1:8899",
+            },
+            headless=True
+        )
+        try:
+            context = browser.new_context(ignore_https_errors=True)
+            page = context.new_page()
+            page.goto("https://www.mytek.tn/trottinette-electrique-kepow-e9pro10s-noir.html", timeout=30000)
+            return page.content()
+        except Exception as e:
+            print(f"Error: {e}")
+            return str(e)
+        finally:
+            browser.close()
 
 if __name__ == "__main__":
     print(test_method())
