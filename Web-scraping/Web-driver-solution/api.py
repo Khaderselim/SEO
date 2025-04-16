@@ -8,6 +8,8 @@ from Pattern_extractor import extract_pattern
 from urllib.parse import urlparse
 import os
 from Values_extractor import DOMExtractor
+from param_test import test_method
+
 
 app = Flask(__name__) # Initialize Flask app
 app.config['SESSION_TYPE'] = 'filesystem' # Configure session type
@@ -142,7 +144,13 @@ def extract_price():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
+@app.route('/api/param_test',methods=['GET'])
+def param_test():
+    return jsonify({
+        'success': True,
+        'message': 'Test successful',
+        'price' : str(test_method())
+    })
 @app.route('/api/interactions', methods=['GET'])
 def get_interactions():
     """
