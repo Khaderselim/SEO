@@ -4,7 +4,7 @@ import re
 
 def test_method():
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(proxy={"server":"socks5://127.0.0.1:8899"},headless=False)
+        browser = playwright.chromium.launch(headless=False)
         page = browser.new_page()
         try:
             page.goto("https://www.mytek.tn/trottinette-electrique-kepow-e9pro10s-noir.html", timeout=30000)
